@@ -11,7 +11,8 @@ license = { text = "MIT" }
 keywords = ["llm", "agents", "data-analysis", "langgraph", "claude", "mlops"]
 
 dependencies = [
-    # Filled in as we go, phase by phase
+   "anthropic>=0.40",
+   "python-dotenv>=1.0",
 ]
 
 [project.optional-dependencies]

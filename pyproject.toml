@@ -1,0 +1,44 @@
+[project]
+name = "datachat"
+version = "0.1.0"
+description = "An agentic data analyst that explores CSVs and answers natural-language questions using Claude and LangGraph."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "Md Abir Hossain", email = "abirfarabi915@gmail.com" },
+]
+license = { text = "MIT" }
+keywords = ["llm", "agents", "data-analysis", "langgraph", "claude", "mlops"]
+
+dependencies = [
+    # Filled in as we go, phase by phase
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/abir171915/datachat"
+Repository = "https://github.com/abir171915/datachat"
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

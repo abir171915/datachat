@@ -24,9 +24,7 @@ def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
         "columns": list(df.columns),
         "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
         "missing_values": {
-            col: int(df[col].isnull().sum())
-            for col in df.columns
-            if df[col].isnull().any()
+            col: int(df[col].isnull().sum()) for col in df.columns
         },
         "memory_usage_mb": round(df.memory_usage(deep=True).sum() / 1024**2, 3),
     }

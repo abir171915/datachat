@@ -13,12 +13,18 @@ def test_basic_shape():
     assert result["shape"]["columns"] == 2
 
 
-def test_missing_values_detected():
+def test_missing_values_include_all_columns():
+    """Missing values dict should include all columns, even clean ones."""
     df = pd.DataFrame({"a": [1, None, 3], "b": [1, 2, 3]})
     result = describe_dataset(df)
-    assert result["missing_values"] == {"a": 1}
-    # Column b has no nulls, so it should not appear
-    assert "b" not in result["missing_values"]
+    assert result["missing_values"] == {"a": 1, "b": 0}
+
+
+def test_missing_values_zero_when_clean():
+    """A fully clean DataFrame should show zeros for every column."""
+    df = pd.DataFrame({"a": [1, 2, 3], "b": ["x", "y", "z"]})
+    result = describe_dataset(df)
+    assert result["missing_values"] == {"a": 0, "b": 0}
 
 
 def test_sample_size_clamped():

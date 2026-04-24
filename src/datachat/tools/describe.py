@@ -1,44 +1,5 @@
-"""
-Tool: describe_dataset
-
-Returns a structured summary of a pandas DataFrame designed for an LLM
-to reason about. Includes shape, column types, missing values, sample rows,
-numeric statistics, and categorical summaries.
-"""
-
 import pandas as pd
 
-
-# ────────────────────────────────────────────────────────────────
-# Tool definition (what Claude sees)
-# ────────────────────────────────────────────────────────────────
-
-TOOL_DEFINITION = {
-    "name": "describe_dataset",
-    "description": (
-        "Returns a comprehensive summary of the current dataset including "
-        "its shape, column names and types, missing value counts, numeric "
-        "statistics (mean, std, min, max, quartiles), sample rows, and "
-        "categorical value counts. Always call this first when you need "
-        "to understand the structure of a new dataset before any analysis."
-    ),
-    "input_schema": {
-        "type": "object",
-        "properties": {
-            "sample_size": {
-                "type": "integer",
-                "description": "Number of sample rows to include (default 5, max 20).",
-                "default": 5,
-            }
-        },
-        "required": [],
-    },
-}
-
-
-# ────────────────────────────────────────────────────────────────
-# Implementation (what my code does)
-# ────────────────────────────────────────────────────────────────
 
 def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
     """
@@ -54,6 +15,7 @@ def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
     """
     sample_size = min(max(sample_size, 1), 20)
 
+    # Build the base summary
     summary = {
         "shape": {
             "rows": int(df.shape[0]),
@@ -67,8 +29,9 @@ def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
             if df[col].isnull().any()
         },
         "memory_usage_mb": round(df.memory_usage(deep=True).sum() / 1024**2, 3),
-        "sample_rows": df.head(sample_size).to_dict(orient="records"),
     }
+
+    summary["sample_rows"] = df.head(sample_size).to_dict(orient="records")
 
     # Numeric column statistics
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
@@ -86,7 +49,7 @@ def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
             # Only include top values if cardinality is reasonable
             if unique_count <= 20:
                 cat_info["top_values"] = df[col].value_counts().head(10).to_dict()
-            summary["categorical_summary"] = cat_summary
             cat_summary[col] = cat_info
+        summary["categorical_summary"] = cat_summary
 
     return summary

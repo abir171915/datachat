@@ -1,5 +1,44 @@
+"""
+Tool: describe_dataset
+
+Returns a structured summary of a pandas DataFrame designed for an LLM
+to reason about. Includes shape, column types, missing values, sample rows,
+numeric statistics, and categorical summaries.
+"""
+
 import pandas as pd
 
+
+# ────────────────────────────────────────────────────────────────
+# Tool definition (for Claude )
+# ────────────────────────────────────────────────────────────────
+
+TOOL_DEFINITION = {
+    "name": "describe_dataset",
+    "description": (
+        "Returns a comprehensive summary of the current dataset including "
+        "its shape, column names and types, missing value counts, numeric "
+        "statistics (mean, std, min, max, quartiles), sample rows, and "
+        "categorical value counts. Always call this first when you need "
+        "to understand the structure of a new dataset before any analysis."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "sample_size": {
+                "type": "integer",
+                "description": "Number of sample rows to include (default 5, max 20).",
+                "default": 5,
+            }
+        },
+        "required": [],
+    },
+}
+
+
+# ────────────────────────────────────────────────────────────────
+# Implementation (what your code does)
+# ────────────────────────────────────────────────────────────────
 
 def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
     """
@@ -24,12 +63,29 @@ def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
         "columns": list(df.columns),
         "dtypes": {col: str(dtype) for col, dtype in df.dtypes.items()},
         "missing_values": {
-            col: int(df[col].isnull().sum()) for col in df.columns
+            col: int(df[col].isnull().sum())
+            for col in df.columns
+            if df[col].isnull().any()
         },
         "memory_usage_mb": round(df.memory_usage(deep=True).sum() / 1024**2, 3),
     }
 
-    summary["sample_rows"] = df.head(sample_size).to_dict(orient="records")
+    # Sample rows: always include head, and add a random sample for variety.
+    # Random sample uses a fixed seed for reproducibility across calls.
+    head_rows = df.head(sample_size).to_dict(orient="records")
+
+    if len(df) > sample_size:
+        random_rows = (
+            df.sample(n=sample_size, random_state=42)
+            .to_dict(orient="records")
+        )
+    else:
+        random_rows = []  # Dataset too small; head already covers everything
+
+    summary["sample_rows"] = {
+        "head": head_rows,
+        "random_sample": random_rows,
+    }
 
     # Numeric column statistics
     numeric_cols = df.select_dtypes(include="number").columns.tolist()
@@ -38,7 +94,7 @@ def describe_dataset(df: pd.DataFrame, sample_size: int = 5) -> dict:
         summary["numeric_stats"] = numeric_stats
 
     # Categorical column summaries (object / category / bool dtypes)
-    categorical_cols = df.select_dtypes(include=["object", "str", "category", "bool"]).columns.tolist()
+    categorical_cols = df.select_dtypes(include=["object", "category", "bool"]).columns.tolist()
     if categorical_cols:
         cat_summary = {}
         for col in categorical_cols:

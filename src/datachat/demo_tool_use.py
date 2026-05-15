@@ -52,7 +52,7 @@ TOOL_DEFINITIONS = [
 # This is the actual Python function that does the work.
 # Claude never sees this code — only the description above.
 def get_current_time(timezone: str) -> str:
-    """Return the current time in the given timezone as a human-readable string."""
+    """Return the current time in the given timezone as a string."""
     try:
         now = datetime.now(ZoneInfo(timezone))
         return now.strftime("%A, %d %B %Y at %H:%M:%S %Z")
@@ -76,7 +76,10 @@ def run_agent(user_message: str) -> str:
     client = get_client()
 
     # Start the conversation history with the user's message
-    messages = [{"role": "user", "content": user_message}]
+    messages = [
+        {"role": "user", 
+         "content": user_message}
+         ]
 
     # Loop until Claude gives us a final text answer (no more tool calls)
     while True:

@@ -89,7 +89,7 @@ def compute_correlation(df : pd.DataFrame, target_column : str, min_abs_correlat
     if not numeric_columns : 
         return{
             "target_column" : target_column,
-            "correlation" : [],
+            "correlations" : [],
             "message" : f"No other columns available to correlate against",
             "skipped_non_numeric_columns" : skipped_non_numeric,
         }
